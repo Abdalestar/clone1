@@ -361,7 +361,7 @@ const ScanScreen = ({ navigation }: any) => {
             {[...Array(3)].map((_, i) => (
               <View
                 key={i}
-                style={[styles.wave, { animationDelay: `${i * 0.2}s` }]}
+                style={styles.wave}
               />
             ))}
           </View>
