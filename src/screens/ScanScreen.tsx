@@ -9,7 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
-import * as NFC from 'expo-nfc';
+import * as NFC from '../utils/nfc-polyfill';
 import * as Haptics from 'expo-haptics';
 import { MaterialIcons } from '@expo/vector-icons';
 import ConfettiCannon from 'react-native-confetti-cannon';
