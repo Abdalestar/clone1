@@ -12,3 +12,7 @@ npm-debug.*
 web-build/
 .env
 .env.local
+-e 
+# Environment files
+*.env
+*.env.*
