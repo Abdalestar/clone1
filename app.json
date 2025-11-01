@@ -1,0 +1,55 @@
+{
+  "expo": {
+    "name": "Loyalty Stamp App",
+    "slug": "loyalty-stamp-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#007BFF"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.loyaltystamp.app",
+      "infoPlist": {
+        "NFCReaderUsageDescription": "This app uses NFC to collect loyalty stamps from businesses.",
+        "NSCameraUsageDescription": "This app uses the camera to scan QR codes for collecting stamps.",
+        "NSLocationWhenInUseUsageDescription": "This app uses your location to find nearby businesses."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#007BFF"
+      },
+      "package": "com.loyaltystamp.app",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.NFC"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-location",
+      "expo-camera",
+      "expo-barcode-scanner",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#007BFF"
+        }
+      ]
+    ]
+  }
+}
