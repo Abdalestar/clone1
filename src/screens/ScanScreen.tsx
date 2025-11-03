@@ -241,32 +241,27 @@ const ScanScreen = ({ navigation }: any) => {
         return;
       }
 
-      // Show success animation
+      // Animate success
       animateStampSuccess();
       
+      // Show success dialog
+      setSuccessData({
+        title: isCompleted ? '🎉 Card Complete!' : '✅ Stamp Added!',
+        message: isCompleted
+          ? `Congratulations! You've earned your reward!`
+          : `Great! Keep collecting stamps.`,
+        businessName: business.name,
+        stampsCollected: updatedCard?.stamps_collected || 0,
+        stampsRequired: business.stamps_required,
+        isComplete: isCompleted,
+      });
+      setShowSuccess(true);
+      
+      // Confetti for completion
       if (isCompleted) {
-        confettiRef.current?.start();
         setTimeout(() => {
-          Alert.alert(
-            '🎉 Congratulations!',
-            `Your stamp card for ${business.name} is complete! You can now redeem your reward: ${business.reward_description}`,
-            [
-              {
-                text: 'View Wallet',
-                onPress: () => navigation.navigate('Wallet'),
-              },
-              { text: 'Continue', style: 'cancel' },
-            ]
-          );
-        }, 1000);
-      } else {
-        setShowSuccess(true);
-        setTimeout(() => setShowSuccess(false), 2000);
-        Alert.alert(
-          '✅ Stamp Added!',
-          `Stamp collected at ${business.name}. Progress: ${updatedCard?.stamps_collected || 0}/${business.stamps_required}`,
-          [{ text: 'Great!' }]
-        );
+          confettiRef.current?.start();
+        }, 300);
       }
 
       // Reload cards
