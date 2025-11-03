@@ -90,6 +90,8 @@ CREATE INDEX IF NOT EXISTS idx_stamps_card_id ON public.stamps(stamp_card_id);
 CREATE INDEX IF NOT EXISTS idx_redemptions_user_id ON public.redemptions(user_id);
 CREATE INDEX IF NOT EXISTS idx_businesses_location ON public.businesses(latitude, longitude);
 CREATE INDEX IF NOT EXISTS idx_businesses_category ON public.businesses(category);
+CREATE INDEX IF NOT EXISTS idx_used_nonces_nonce ON public.used_nonces(nonce);
+CREATE INDEX IF NOT EXISTS idx_used_nonces_expires ON public.used_nonces(expires_at);
 
 -- Enable Row Level Security
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
@@ -97,6 +99,8 @@ ALTER TABLE public.businesses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.stamp_cards ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.stamps ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.redemptions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.used_nonces ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.payload_secrets ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for users table
 CREATE POLICY "Users can view own profile" ON public.users
