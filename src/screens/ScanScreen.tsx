@@ -7,9 +7,9 @@ import {
   Alert,
   Animated,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
-import * as NFC from '../utils/nfc-polyfill';
 import * as Haptics from 'expo-haptics';
 import { MaterialIcons } from '@expo/vector-icons';
 import ConfettiCannon from 'react-native-confetti-cannon';
@@ -17,6 +17,9 @@ import { COLORS, SIZES } from '../utils/constants';
 import { getBusinessByQR, getBusinessByNFC, getUserStampCards, createStampCard, addStamp } from '../services/stamps';
 import { getCurrentUser } from '../services/auth';
 import { Business, StampCard } from '../types';
+import NFCService from '../services/nfc';
+import { decodePayload } from '../utils/payload';
+import SuccessDialog from '../components/SuccessDialog';
 
 type ScanMode = 'qr' | 'nfc';
 
