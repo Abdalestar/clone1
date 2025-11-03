@@ -32,6 +32,18 @@ const ScanScreen = ({ navigation }: any) => {
   const [stampCards, setStampCards] = useState<StampCard[]>([]);
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [successData, setSuccessData] = useState<{
+    title: string;
+    message: string;
+    businessName?: string;
+    stampsCollected?: number;
+    stampsRequired?: number;
+    isComplete?: boolean;
+  }>({
+    title: '',
+    message: '',
+  });
+  const [isProcessing, setIsProcessing] = useState(false);
   const confettiRef = React.useRef<any>(null);
   
   const scaleAnim = useState(new Animated.Value(1))[0];
