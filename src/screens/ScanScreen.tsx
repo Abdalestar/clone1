@@ -53,15 +53,22 @@ const ScanScreen = ({ navigation }: any) => {
     requestPermissions();
     loadStampCards();
     checkNFCStatus();
+    
+    return () => {
+      // Cleanup NFC on unmount
+      if (scanMode === 'nfc') {
+        NFCService.cleanup();
+      }
+    };
   }, []);
 
   useEffect(() => {
     if (scanMode === 'nfc' && nfcEnabled) {
-      startNFCReading();
+      // NFC reading handled by button press, not auto-start
     }
     return () => {
       if (scanMode === 'nfc') {
-        stopNFCReading();
+        NFCService.stopReading();
       }
     };
   }, [scanMode, nfcEnabled]);
