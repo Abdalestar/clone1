@@ -4,6 +4,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { COLORS, SIZES } from '../utils/constants';
 import { StampCard as StampCardType } from '../types';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 
 interface StampCardProps {
   card: StampCardType;
@@ -19,9 +20,8 @@ const StampCard: React.FC<StampCardProps> = ({ card, onPress }) => {
 
   const renderStampGrid = () => {
     const stamps = [];
-    const rows = 2;
-    const cols = card.stamps_required / rows;
-
+    const maxPerRow = 5;
+    
     for (let i = 0; i < card.stamps_required; i++) {
       const isFilled = i < card.stamps_collected;
       stamps.push(
@@ -33,7 +33,12 @@ const StampCard: React.FC<StampCardProps> = ({ card, onPress }) => {
           ]}
         >
           {isFilled && (
-            <MaterialIcons name="check" size={16} color={COLORS.white} />
+            <LinearGradient
+              colors={[COLORS.success, COLORS.successLight]}
+              style={styles.stampGradient}
+            >
+              <MaterialIcons name="check" size={14} color={COLORS.white} />
+            </LinearGradient>
           )}
         </View>
       );
