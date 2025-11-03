@@ -153,22 +153,61 @@ const ScanScreen = ({ navigation }: any) => {
   };
 
   const handleBarCodeScanned = async ({ type, data }: any) => {
-    if (scanned) return;
+    if (scanned || isProcessing) return;
 
     setScanned(true);
+    setIsProcessing(true);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
+    await handleScanData(data, 'qr');
+  };
+
+  const handleScanData = async (data: string, method: 'nfc' | 'qr') => {
     try {
-      // Find business by QR code
-      const business = await getBusinessByQR(data);
-      if (business) {
-        await handleStampCollection(business, 'qr');
+      // Decode and verify payload
+      const { valid, payload, error } = await decodePayload(data);
+      
+      if (!valid) {
+        Alert.alert('Invalid Code', error || 'The scanned code is invalid or expired');
+        return;
+      }
+
+      if (!payload) {
+        Alert.alert('Error', 'Failed to read stamp data');
+        return;
+      }
+
+      // Get business by ID from payload
+      let business: Business | null = null;
+      
+      if (payload.businessId.startsWith('QR_') || payload.businessId.startsWith('SHOP_')) {
+        // Legacy format - find by QR code or NFC tag
+        if (method === 'qr') {
+          business = await getBusinessByQR(payload.businessId);
+        } else {
+          business = await getBusinessByNFC(payload.businessId);
+        }
       } else {
-        Alert.alert('Error', 'Invalid QR code. Please scan a valid business QR code.');
+        // New format - direct business ID
+        const { supabase } = await import('../services/supabase');
+        const { data: bizData } = await supabase
+          .from('businesses')
+          .select('*')
+          .eq('id', payload.businessId)
+          .single();
+        business = bizData;
+      }
+
+      if (business) {
+        await handleStampCollection(business, method);
+      } else {
+        Alert.alert('Error', 'Business not found. Please try again.');
       }
     } catch (error: any) {
-      Alert.alert('Error', error.message);
+      console.error('Scan error:', error);
+      Alert.alert('Error', error.message || 'Failed to process stamp');
     } finally {
+      setIsProcessing(false);
       setTimeout(() => setScanned(false), 3000);
     }
   };
