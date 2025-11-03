@@ -51,27 +51,52 @@ const StampCard: React.FC<StampCardProps> = ({ card, onPress }) => {
     <TouchableOpacity
       style={styles.container}
       onPress={onPress}
-      activeOpacity={0.9}
+      activeOpacity={0.95}
       data-testid="stamp-card"
     >
       <LinearGradient
-        colors={isCompleted ? [COLORS.success, '#20c997'] : [COLORS.white, COLORS.light]}
+        colors={
+          isCompleted
+            ? [COLORS.gradientStart, COLORS.gradientEnd]
+            : [COLORS.white, COLORS.light]
+        }
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={styles.gradient}
       >
+        {/* Glassmorphism Overlay */}
         {isCompleted && (
-          <View style={styles.completedBadge}>
-            <MaterialIcons name="stars" size={20} color={COLORS.white} />
-            <Text style={styles.completedText}>Ready to Redeem!</Text>
+          <View style={styles.glassOverlay}>
+            <BlurView intensity={20} style={styles.blurView} tint="light" />
           </View>
         )}
 
+        {/* Completion Badge */}
+        {isCompleted && (
+          <View style={styles.completedBadge}>
+            <LinearGradient
+              colors={[COLORS.gold, '#FFA500']}
+              style={styles.badgeGradient}
+            >
+              <MaterialIcons name="stars" size={20} color={COLORS.white} />
+              <Text style={styles.completedText}>Ready to Redeem!</Text>
+            </LinearGradient>
+          </View>
+        )}
+
+        {/* Header Section */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            <MaterialIcons
-              name="store"
-              size={40}
-              color={isCompleted ? COLORS.white : COLORS.primary}
-            />
+            <LinearGradient
+              colors={isCompleted ? [COLORS.white, COLORS.lightGray] : [COLORS.primary, COLORS.primaryDark]}
+              style={styles.logoGradient}
+            >
+              <MaterialIcons
+                name="store"
+                size={36}
+                color={isCompleted ? COLORS.primary : COLORS.white}
+              />
+            </LinearGradient>
           </View>
           <View style={styles.businessInfo}>
             <Text
@@ -89,32 +114,71 @@ const StampCard: React.FC<StampCardProps> = ({ card, onPress }) => {
                 isCompleted && { color: COLORS.white, opacity: 0.9 },
               ]}
             >
-              {card.business?.category || 'General'}
+              {card.business?.category || 'General'} • ⭐ {card.business?.rating || 5.0}
             </Text>
           </View>
         </View>
 
-        <View style={styles.progressContainer}>
+        {/* Progress Section with Fintech Style */}
+        <View style={styles.progressSection}>
+          <View style={styles.progressHeader}>
+            <Text
+              style={[
+                styles.progressLabel,
+                isCompleted && { color: COLORS.white },
+              ]}
+            >
+              Progress
+            </Text>
+            <Text
+              style={[
+                styles.progressPercentage,
+                isCompleted && { color: COLORS.white },
+              ]}
+            >
+              {Math.round(progress)}%
+            </Text>
+          </View>
+          
+          <View style={styles.progressBarContainer}>
+            <View style={styles.progressBarBg}>
+              <LinearGradient
+                colors={[COLORS.success, COLORS.successLight]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={[styles.progressBarFill, { width: `${progress}%` }]}
+              />
+            </View>
+          </View>
+          
           <Text
             style={[
-              styles.progressText,
+              styles.stampCount,
               isCompleted && { color: COLORS.white },
             ]}
           >
-            {card.stamps_collected} / {card.stamps_required} stamps
+            {card.stamps_collected} of {card.stamps_required} stamps collected
           </Text>
-          <View style={styles.progressBarContainer}>
-            <View style={[styles.progressBar, { width: `${progress}%` }]} />
-          </View>
         </View>
 
+        {/* Stamp Grid */}
         {renderStampGrid()}
 
-        {isCompleted && (
-          <Text style={styles.rewardText}>
-            🎁 {card.business?.reward_description || 'Free Reward'}
-          </Text>
+        {/* Reward Section */}
+        {isCompleted && card.business?.reward_description && (
+          <View style={styles.rewardSection}>
+            <View style={styles.rewardBadge}>
+              <MaterialIcons name="card-giftcard" size={24} color={COLORS.gold} />
+              <Text style={styles.rewardText}>
+                {card.business.reward_description}
+              </Text>
+            </View>
+          </View>
         )}
+
+        {/* Decorative Corner Elements */}
+        <View style={styles.cornerTopLeft} />
+        <View style={styles.cornerBottomRight} />
       </LinearGradient>
     </TouchableOpacity>
   );
