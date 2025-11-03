@@ -100,11 +100,11 @@ const ScanScreen = ({ navigation }: any) => {
 
   const checkNFCStatus = async () => {
     try {
-      const supported = await NFC.hasHardwareAsync();
+      const supported = await NFCService.isSupported();
       setNfcSupported(supported);
       
       if (supported) {
-        const enabled = await NFC.isEnabledAsync();
+        const enabled = await NFCService.isEnabled();
         setNfcEnabled(enabled);
       }
     } catch (error) {
@@ -130,47 +130,24 @@ const ScanScreen = ({ navigation }: any) => {
   };
 
   const startNFCReading = async () => {
-    if (!nfcSupported || !nfcEnabled) return;
+    if (!nfcSupported || !nfcEnabled || isProcessing) return;
 
     try {
-      await NFC.setEventListenerAsync((event: any) => {
-        if (event.type === 'discovered') {
-          handleNFCScan(event);
-        }
+      setIsProcessing(true);
+      await NFCService.startReading(async (tag) => {
+        if (scanned) return;
+        
+        setScanned(true);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        
+        // Process NFC tag data
+        await handleScanData(tag.data, 'nfc');
       });
-    } catch (error) {
-      console.error('NFC error:', error);
-    }
-  };
-
-  const stopNFCReading = async () => {
-    try {
-      await NFC.setEventListenerAsync(null);
-    } catch (error) {
-      console.error('Stop NFC error:', error);
-    }
-  };
-
-  const handleNFCScan = async (event: any) => {
-    if (scanned) return;
-
-    try {
-      const tagId = event.id || event.ndefMessage?.[0]?.payload;
-      if (!tagId) return;
-
-      setScanned(true);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
-      // Find business by NFC tag
-      const business = await getBusinessByNFC(tagId);
-      if (business) {
-        await handleStampCollection(business, 'nfc');
-      } else {
-        Alert.alert('Error', 'Business not found for this NFC tag');
-      }
     } catch (error: any) {
-      Alert.alert('Error', error.message);
+      console.error('NFC error:', error);
+      Alert.alert('NFC Error', error.message || 'Failed to read NFC tag');
     } finally {
+      setIsProcessing(false);
       setTimeout(() => setScanned(false), 2000);
     }
   };
