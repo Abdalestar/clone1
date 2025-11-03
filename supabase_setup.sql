@@ -155,6 +155,17 @@ CREATE POLICY "Users can view own redemptions" ON public.redemptions
 CREATE POLICY "Users can create own redemptions" ON public.redemptions
     FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+-- RLS Policies for used_nonces table
+CREATE POLICY "Users can view own nonces" ON public.used_nonces
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own nonces" ON public.used_nonces
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- RLS Policies for payload_secrets table (admin only)
+CREATE POLICY "Only service role can access secrets" ON public.payload_secrets
+    FOR ALL USING (auth.jwt() ->> 'role' = 'service_role');
+
 -- Insert Qatar businesses data
 INSERT INTO public.businesses (name, category, description, logo_url, latitude, longitude, address, rating, stamps_required, reward_description, nfc_tag_id, qr_code) VALUES
     ('Souq Waqif Coffee House', 'coffee', 'Traditional Qatari coffee experience in the heart of Souq Waqif', 'https://via.placeholder.com/100x100.png?text=Coffee', 25.2867, 51.5333, 'Souq Waqif, Doha', 4.8, 10, 'Free Qahwa & Date Set', 'SHOP_SWC001', 'QR_SWC001'),
