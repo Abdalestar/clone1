@@ -383,13 +383,33 @@ const ScanScreen = ({ navigation }: any) => {
           >
             <MaterialIcons name="nfc" size={100} color={COLORS.secondary} />
           </Animated.View>
-          <Text style={styles.nfcTitle}>Hold phone near business terminal</Text>
+          <Text style={styles.nfcTitle}>Ready to Tap</Text>
           <Text style={styles.nfcSubtitle}>
             {nfcSupported && nfcEnabled
-              ? 'Ready to tap...'
+              ? 'Tap the button below to scan'
               : 'NFC not available. Use QR scan instead.'}
           </Text>
           
+          {nfcSupported && nfcEnabled && (
+            <TouchableOpacity
+              style={styles.nfcScanButton}
+              onPress={startNFCReading}
+              disabled={isProcessing || scanned}
+              data-testid="nfc-tap-button"
+            >
+              {isProcessing ? (
+                <ActivityIndicator color={COLORS.white} />
+              ) : (
+                <>
+                  <MaterialIcons name="tap-and-play" size={28} color={COLORS.white} />
+                  <Text style={styles.nfcScanButtonText}>
+                    {scanned ? 'Scanning...' : 'Tap to Scan NFC'}
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+          )}
+
           <View style={styles.nfcWaves}>
             {[...Array(3)].map((_, i) => (
               <View
@@ -401,15 +421,22 @@ const ScanScreen = ({ navigation }: any) => {
         </View>
       )}
 
-      {/* Success Indicator */}
-      {showSuccess && (
-        <Animated.View
-          style={[styles.successBadge, { transform: [{ scale: scaleAnim }] }]}
-        >
-          <MaterialIcons name="check-circle" size={48} color={COLORS.success} />
-          <Text style={styles.successText}>Stamp Added!</Text>
-        </Animated.View>
-      )}
+      {/* Success Dialog */}
+      <SuccessDialog
+        visible={showSuccess}
+        onClose={() => {
+          setShowSuccess(false);
+          if (successData.isComplete) {
+            navigation.navigate('Wallet');
+          }
+        }}
+        title={successData.title}
+        message={successData.message}
+        businessName={successData.businessName}
+        stampsCollected={successData.stampsCollected}
+        stampsRequired={successData.stampsRequired}
+        isComplete={successData.isComplete}
+      />
 
       {/* Confetti */}
       <ConfettiCannon
