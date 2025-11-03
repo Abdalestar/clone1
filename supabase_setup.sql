@@ -65,6 +65,24 @@ CREATE TABLE IF NOT EXISTS public.redemptions (
     reward_description TEXT NOT NULL
 );
 
+-- Nonce tracking table (prevent replay attacks)
+CREATE TABLE IF NOT EXISTS public.used_nonces (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    nonce TEXT UNIQUE NOT NULL,
+    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    used_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    expires_at TIMESTAMP WITH TIME ZONE DEFAULT (NOW() + INTERVAL '10 minutes')
+);
+
+-- Payload secrets table (for HMAC signing)
+CREATE TABLE IF NOT EXISTS public.payload_secrets (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    secret_key TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    expires_at TIMESTAMP WITH TIME ZONE,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_stamp_cards_user_id ON public.stamp_cards(user_id);
 CREATE INDEX IF NOT EXISTS idx_stamp_cards_business_id ON public.stamp_cards(business_id);
