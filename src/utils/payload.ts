@@ -1,60 +1,44 @@
 import * as Crypto from 'expo-crypto';
 
-// Secret key for HMAC signing - in production, fetch from Supabase config
-const SECRET_KEY = process.env.PAYLOAD_SECRET || 'loyalty-stamp-secret-2024';
-
 export interface StampPayload {
   businessId: string;
   timestamp: number;
   nonce: string;
-  signature: string;
+  signature?: string; // Optional - only verified server-side
 }
 
 /**
- * Generate HMAC signature for payload
+ * Generate a cryptographically secure nonce
  */
-export const generateSignature = async (data: string): Promise<string> => {
-  const hash = await Crypto.digestStringAsync(
-    Crypto.CryptoDigestAlgorithm.SHA256,
-    `${SECRET_KEY}:${data}`
-  );
-  return hash;
+export const generateNonce = async (): Promise<string> => {
+  const randomBytes = await Crypto.getRandomBytesAsync(16);
+  return Array.from(randomBytes)
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
 };
 
 /**
- * Verify payload signature
- */
-export const verifySignature = async (
-  data: string,
-  signature: string
-): Promise<boolean> => {
-  const expectedSignature = await generateSignature(data);
-  return expectedSignature === signature;
-};
-
-/**
- * Encode stamp payload for QR/NFC
+ * Encode stamp payload for QR/NFC (client-side)
+ * Note: Signature verification happens server-side only
  */
 export const encodePayload = async (
   businessId: string
 ): Promise<string> => {
   const timestamp = Date.now();
-  const nonce = Math.random().toString(36).substring(2, 15);
-  const data = `${businessId}:${timestamp}:${nonce}`;
-  const signature = await generateSignature(data);
-  
+  const nonce = await generateNonce();
+
   const payload: StampPayload = {
     businessId,
     timestamp,
     nonce,
-    signature,
   };
-  
-  return `STAMP:${Buffer.from(JSON.stringify(payload)).toString('base64')}`;
+
+  return `STAMP:${btoa(JSON.stringify(payload))}`;
 };
 
 /**
- * Decode and verify stamp payload from QR/NFC
+ * Decode stamp payload from QR/NFC (client-side parsing only)
+ * Note: Full validation happens server-side via Supabase Edge Function
  */
 export const decodePayload = async (
   encodedData: string
@@ -69,25 +53,16 @@ export const decodePayload = async (
           businessId: encodedData,
           timestamp: Date.now(),
           nonce: 'legacy',
-          signature: 'legacy',
         },
       };
     }
 
     // Decode base64
     const base64Data = encodedData.replace('STAMP:', '');
-    const jsonString = Buffer.from(base64Data, 'base64').toString('utf-8');
+    const jsonString = atob(base64Data);
     const payload: StampPayload = JSON.parse(jsonString);
 
-    // Verify signature
-    const data = `${payload.businessId}:${payload.timestamp}:${payload.nonce}`;
-    const isValid = await verifySignature(data, payload.signature);
-
-    if (!isValid) {
-      return { valid: false, error: 'Invalid signature' };
-    }
-
-    // Check timestamp (payload valid for 5 minutes)
+    // Basic client-side validation (timestamp check only)
     const now = Date.now();
     const age = now - payload.timestamp;
     const MAX_AGE = 5 * 60 * 1000; // 5 minutes
@@ -100,9 +75,11 @@ export const decodePayload = async (
       return { valid: false, error: 'Invalid timestamp' };
     }
 
+    // Payload appears valid (final verification on server)
     return { valid: true, payload };
-  } catch (error: any) {
-    return { valid: false, error: error.message || 'Invalid payload format' };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Invalid payload format';
+    return { valid: false, error: errorMessage };
   }
 };
 
@@ -114,14 +91,15 @@ export const generateTestPayload = async (businessId: string): Promise<string> =
 };
 
 /**
- * Check if payload is duplicate (to prevent replay attacks)
+ * Validate payload structure before sending to server
  */
-export const isDuplicatePayload = async (
-  nonce: string,
-  userId: string
-): Promise<boolean> => {
-  // In production, check against database of used nonces
-  // For now, just return false
-  // TODO: Implement nonce tracking in Supabase
-  return false;
+export const validatePayloadStructure = (payload: StampPayload): boolean => {
+  return !!(
+    payload.businessId &&
+    typeof payload.businessId === 'string' &&
+    payload.timestamp &&
+    typeof payload.timestamp === 'number' &&
+    payload.nonce &&
+    typeof payload.nonce === 'string'
+  );
 };

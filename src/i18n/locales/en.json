@@ -1,0 +1,100 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "tryAgain": "Try Again"
+  },
+  "auth": {
+    "login": "Log In",
+    "signup": "Sign Up",
+    "logout": "Log Out",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "username": "Username",
+    "fullName": "Full Name",
+    "phoneNumber": "Phone Number",
+    "forgotPassword": "Forgot Password?",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "loginError": "Failed to log in",
+    "signupError": "Failed to sign up"
+  },
+  "home": {
+    "title": "Home",
+    "greeting": "Hi",
+    "totalStamps": "Total Stamps",
+    "readyToRedeem": "Ready to Redeem",
+    "activeCards": "Active Cards",
+    "quickScan": "Quick Scan",
+    "activeStampCards": "Active Stamp Cards",
+    "completedCards": "Completed Cards",
+    "viewAll": "View All"
+  },
+  "shops": {
+    "title": "Shops",
+    "search": "Search businesses...",
+    "nearby": "Nearby Businesses",
+    "categories": "Categories",
+    "all": "All",
+    "distance": "distance",
+    "addCard": "Add Card",
+    "getDirections": "Get Directions"
+  },
+  "scan": {
+    "title": "Scan",
+    "qrMode": "QR Scan",
+    "nfcMode": "NFC Tap",
+    "instruction": "Position QR code within the frame",
+    "tapToScan": "Tap to Scan NFC",
+    "scanning": "Scanning...",
+    "stampAdded": "Stamp Added!",
+    "cardComplete": "Card Complete!",
+    "manualEntry": "Manual Entry"
+  },
+  "wallet": {
+    "title": "Wallet",
+    "allCards": "All",
+    "active": "Active",
+    "completed": "Complete",
+    "redeemNow": "Redeem Now",
+    "confirmRedeem": "Confirm Redemption",
+    "redeemMessage": "Are you sure you want to redeem this reward?",
+    "noCards": "No stamp cards yet"
+  },
+  "profile": {
+    "title": "Profile",
+    "stats": "Your Stats",
+    "tier": "Your Tier",
+    "settings": "Settings",
+    "notifications": "Notifications",
+    "darkMode": "Dark Mode",
+    "language": "Language",
+    "locationSharing": "Location Sharing",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "help": "Help & Support",
+    "version": "Version"
+  },
+  "notifications": {
+    "stampCollected": "Stamp Collected!",
+    "cardComplete": "Card Complete!",
+    "rewardReady": "Reward Ready!",
+    "cardExpiring": "Card Expiring Soon",
+    "nearbyBusiness": "Nearby Business"
+  },
+  "errors": {
+    "networkError": "Network error. Please check your connection.",
+    "unknownError": "An unknown error occurred",
+    "invalidCode": "Invalid code",
+    "businessNotFound": "Business not found",
+    "permissionDenied": "Permission denied"
+  }
+}

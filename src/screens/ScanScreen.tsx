@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -17,13 +17,14 @@ import { COLORS, SIZES } from '../utils/constants';
 import { getBusinessByQR, getBusinessByNFC, getUserStampCards, createStampCard, addStamp } from '../services/stamps';
 import { getCurrentUser } from '../services/auth';
 import { Business, StampCard } from '../types';
+import { ScanScreenProps } from '../types/navigation';
 import NFCService from '../services/nfc';
 import { decodePayload } from '../utils/payload';
 import SuccessDialog from '../components/SuccessDialog';
 
 type ScanMode = 'qr' | 'nfc';
 
-const ScanScreen = ({ navigation }: any) => {
+const ScanScreen: React.FC<ScanScreenProps> = ({ navigation }) => {
   const [scanMode, setScanMode] = useState<ScanMode>('qr');
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanned, setScanned] = useState(false);
@@ -44,10 +45,15 @@ const ScanScreen = ({ navigation }: any) => {
     message: '',
   });
   const [isProcessing, setIsProcessing] = useState(false);
-  const confettiRef = React.useRef<any>(null);
-  
-  const scaleAnim = useState(new Animated.Value(1))[0];
-  const pulseAnim = useState(new Animated.Value(1))[0];
+  const confettiRef = useRef<any>(null);
+
+  // Use useRef for Animated values (not useState)
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const pulseAnimationRef = useRef<Animated.CompositeAnimation | null>(null);
+
+  // Use ref for scan flag to prevent race conditions
+  const scanningRef = useRef(false);
 
   useEffect(() => {
     requestPermissions();
@@ -74,9 +80,9 @@ const ScanScreen = ({ navigation }: any) => {
   }, [scanMode, nfcEnabled]);
 
   useEffect(() => {
-    // Pulse animation for NFC mode
+    // Pulse animation for NFC mode with proper cleanup
     if (scanMode === 'nfc') {
-      Animated.loop(
+      pulseAnimationRef.current = Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, {
             toValue: 1.2,
@@ -89,8 +95,19 @@ const ScanScreen = ({ navigation }: any) => {
             useNativeDriver: true,
           }),
         ])
-      ).start();
+      );
+      pulseAnimationRef.current.start();
     }
+
+    // Cleanup: Stop animation when mode changes or component unmounts
+    return () => {
+      if (pulseAnimationRef.current) {
+        pulseAnimationRef.current.stop();
+        pulseAnimationRef.current = null;
+      }
+      // Reset pulse animation value
+      pulseAnim.setValue(1);
+    };
   }, [scanMode]);
 
   const requestPermissions = async () => {
@@ -129,38 +146,45 @@ const ScanScreen = ({ navigation }: any) => {
     }
   };
 
-  const startNFCReading = async () => {
-    if (!nfcSupported || !nfcEnabled || isProcessing) return;
+  const startNFCReading = useCallback(async () => {
+    if (!nfcSupported || !nfcEnabled || scanningRef.current) return;
 
     try {
+      scanningRef.current = true;
+      setScanned(true);
       setIsProcessing(true);
+
       await NFCService.startReading(async (tag) => {
-        if (scanned) return;
-        
-        setScanned(true);
+        if (!scanningRef.current) return;
+
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        
+
         // Process NFC tag data
         await handleScanData(tag.data, 'nfc');
       });
-    } catch (error: any) {
-      console.error('NFC error:', error);
-      Alert.alert('NFC Error', error.message || 'Failed to read NFC tag');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to read NFC tag';
+      Alert.alert('NFC Error', errorMessage);
     } finally {
       setIsProcessing(false);
-      setTimeout(() => setScanned(false), 2000);
+      setTimeout(() => {
+        setScanned(false);
+        scanningRef.current = false;
+      }, 2000);
     }
-  };
+  }, [nfcSupported, nfcEnabled]);
 
-  const handleBarCodeScanned = async ({ type, data }: any) => {
-    if (scanned || isProcessing) return;
+  const handleBarCodeScanned = useCallback(async ({ type, data }: { type: string; data: string }) => {
+    // Prevent race condition with ref check
+    if (scanningRef.current) return;
 
+    scanningRef.current = true;
     setScanned(true);
     setIsProcessing(true);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
     await handleScanData(data, 'qr');
-  };
+  }, []);
 
   const handleScanData = async (data: string, method: 'nfc' | 'qr') => {
     try {
@@ -203,12 +227,15 @@ const ScanScreen = ({ navigation }: any) => {
       } else {
         Alert.alert('Error', 'Business not found. Please try again.');
       }
-    } catch (error: any) {
-      console.error('Scan error:', error);
-      Alert.alert('Error', error.message || 'Failed to process stamp');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to process stamp';
+      Alert.alert('Error', errorMessage);
     } finally {
       setIsProcessing(false);
-      setTimeout(() => setScanned(false), 3000);
+      setTimeout(() => {
+        setScanned(false);
+        scanningRef.current = false;
+      }, 3000);
     }
   };
 
@@ -266,8 +293,9 @@ const ScanScreen = ({ navigation }: any) => {
 
       // Reload cards
       await loadStampCards();
-    } catch (error: any) {
-      Alert.alert('Error', error.message);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      Alert.alert('Error', errorMessage);
     }
   };
 

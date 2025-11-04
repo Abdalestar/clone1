@@ -1,0 +1,100 @@
+{
+  "common": {
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "success": "نجح",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "close": "إغلاق",
+    "tryAgain": "حاول مرة أخرى"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "signup": "إنشاء حساب",
+    "logout": "تسجيل الخروج",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "username": "اسم المستخدم",
+    "fullName": "الاسم الكامل",
+    "phoneNumber": "رقم الهاتف",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "noAccount": "ليس لديك حساب؟",
+    "haveAccount": "لديك حساب بالفعل؟",
+    "loginError": "فشل تسجيل الدخول",
+    "signupError": "فشل إنشاء الحساب"
+  },
+  "home": {
+    "title": "الرئيسية",
+    "greeting": "مرحبا",
+    "totalStamps": "إجمالي الطوابع",
+    "readyToRedeem": "جاهز للاسترداد",
+    "activeCards": "البطاقات النشطة",
+    "quickScan": "مسح سريع",
+    "activeStampCards": "بطاقات الطوابع النشطة",
+    "completedCards": "البطاقات المكتملة",
+    "viewAll": "عرض الكل"
+  },
+  "shops": {
+    "title": "المتاجر",
+    "search": "البحث عن الأعمال التجارية...",
+    "nearby": "الأعمال القريبة",
+    "categories": "الفئات",
+    "all": "الكل",
+    "distance": "المسافة",
+    "addCard": "إضافة بطاقة",
+    "getDirections": "الحصول على الاتجاهات"
+  },
+  "scan": {
+    "title": "مسح",
+    "qrMode": "مسح QR",
+    "nfcMode": "نقر NFC",
+    "instruction": "ضع رمز QR داخل الإطار",
+    "tapToScan": "انقر للمسح NFC",
+    "scanning": "جاري المسح...",
+    "stampAdded": "تمت إضافة الطابع!",
+    "cardComplete": "اكتملت البطاقة!",
+    "manualEntry": "الإدخال اليدوي"
+  },
+  "wallet": {
+    "title": "المحفظة",
+    "allCards": "الكل",
+    "active": "نشط",
+    "completed": "مكتمل",
+    "redeemNow": "استرداد الآن",
+    "confirmRedeem": "تأكيد الاسترداد",
+    "redeemMessage": "هل أنت متأكد من أنك تريد استرداد هذه المكافأة؟",
+    "noCards": "لا توجد بطاقات طوابع حتى الآن"
+  },
+  "profile": {
+    "title": "الملف الشخصي",
+    "stats": "إحصائياتك",
+    "tier": "مستواك",
+    "settings": "الإعدادات",
+    "notifications": "الإشعارات",
+    "darkMode": "الوضع الداكن",
+    "language": "اللغة",
+    "locationSharing": "مشاركة الموقع",
+    "privacy": "سياسة الخصوصية",
+    "terms": "شروط الخدمة",
+    "help": "المساعدة والدعم",
+    "version": "الإصدار"
+  },
+  "notifications": {
+    "stampCollected": "تم جمع الطابع!",
+    "cardComplete": "اكتملت البطاقة!",
+    "rewardReady": "المكافأة جاهزة!",
+    "cardExpiring": "البطاقة تنتهي قريبًا",
+    "nearbyBusiness": "عمل قريب"
+  },
+  "errors": {
+    "networkError": "خطأ في الشبكة. يرجى التحقق من اتصالك.",
+    "unknownError": "حدث خطأ غير معروف",
+    "invalidCode": "رمز غير صالح",
+    "businessNotFound": "لم يتم العثور على العمل",
+    "permissionDenied": "تم رفض الإذن"
+  }
+}

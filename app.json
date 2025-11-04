@@ -50,6 +50,18 @@
           "color": "#007BFF"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "SUPABASE_URL": "${SUPABASE_URL}",
+      "SUPABASE_ANON_KEY": "${SUPABASE_ANON_KEY}",
+      "APP_ENV": "${APP_ENV}",
+      "API_BASE_URL": "${API_BASE_URL}",
+      "ENABLE_ANALYTICS": "${ENABLE_ANALYTICS}",
+      "ENABLE_PUSH_NOTIFICATIONS": "${ENABLE_PUSH_NOTIFICATIONS}",
+      "ENABLE_OFFLINE_MODE": "${ENABLE_OFFLINE_MODE}",
+      "eas": {
+        "projectId": "your-project-id"
+      }
+    }
   }
 }

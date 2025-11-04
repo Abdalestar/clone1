@@ -34,8 +34,9 @@ export const signUp = async (data: SignUpData) => {
     if (profileError) throw profileError;
 
     return { user: authData.user, error: null };
-  } catch (error: any) {
-    return { user: null, error: error.message };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'An error occurred during sign up';
+    return { user: null, error: errorMessage };
   }
 };
 
@@ -48,8 +49,9 @@ export const signIn = async (email: string, password: string) => {
 
     if (error) throw error;
     return { user: data.user, error: null };
-  } catch (error: any) {
-    return { user: null, error: error.message };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'An error occurred during sign in';
+    return { user: null, error: errorMessage };
   }
 };
 
@@ -58,8 +60,9 @@ export const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
     return { error: null };
-  } catch (error: any) {
-    return { error: error.message };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'An error occurred during sign out';
+    return { error: errorMessage };
   }
 };
 
