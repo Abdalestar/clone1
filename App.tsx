@@ -55,64 +55,74 @@ export default function App() {
   const currentTheme = getTheme(theme === 'light' ? 'light' : 'dark');
 
   useEffect(() => {
-    initializeApp();
-  }, []);
+    let subscription: any = null;
+    let removeNotificationListeners: (() => void) | null = null;
 
-  const initializeApp = async () => {
-    try {
-      logger.info('Initializing app...');
+    const initializeApp = async () => {
+      try {
+        logger.info('Initializing app...');
 
-      // Check auth state
-      await checkAuth();
+        // Check auth state
+        await checkAuth();
 
-      // Initialize auth listener
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-        if (session?.user) {
-          await checkAuth();
+        // Initialize auth listener
+        const authListener = supabase.auth.onAuthStateChange(async (_event, session) => {
+          if (session?.user) {
+            await checkAuth();
 
-          // Register for push notifications
-          if (user) {
-            const pushToken = await notificationService.registerForPushNotifications();
-            if (pushToken) {
-              await notificationService.savePushToken(user.id, pushToken);
+            // Register for push notifications
+            const currentUser = useAuthStore.getState().user;
+            if (currentUser) {
+              const pushToken = await notificationService.registerForPushNotifications();
+              if (pushToken) {
+                await notificationService.savePushToken(currentUser.id, pushToken);
+              }
             }
+          } else {
+            useAuthStore.getState().setUser(null);
           }
-        } else {
-          useAuthStore.getState().setUser(null);
+        });
+        
+        subscription = authListener.data.subscription;
+
+        // Setup notification listeners
+        removeNotificationListeners = notificationService.setupNotificationListeners(
+          (notification) => {
+            logger.info('Notification received in foreground', notification);
+          },
+          (response) => {
+            logger.info('User interacted with notification', response);
+            // Handle navigation based on notification data
+          }
+        );
+
+        // Fetch businesses for offline access
+        await fetchBusinesses();
+
+        // Check if user needs onboarding
+        if (isAuthenticated && !hasCompletedOnboarding) {
+          setShowOnboarding(true);
         }
-      });
 
-      // Setup notification listeners
-      const removeNotificationListeners = notificationService.setupNotificationListeners(
-        (notification) => {
-          logger.info('Notification received in foreground', notification);
-        },
-        (response) => {
-          logger.info('User interacted with notification', response);
-          // Handle navigation based on notification data
-        }
-      );
-
-      // Fetch businesses for offline access
-      await fetchBusinesses();
-
-      // Check if user needs onboarding
-      if (isAuthenticated && !hasCompletedOnboarding) {
-        setShowOnboarding(true);
+        setLoading(false);
+      } catch (error) {
+        logger.error('Failed to initialize app', error);
+        setLoading(false);
       }
+    };
 
-      setLoading(false);
+    initializeApp();
 
-      // Cleanup
-      return () => {
+    // Cleanup function returned from useEffect
+    return () => {
+      if (subscription) {
         subscription.unsubscribe();
+      }
+      if (removeNotificationListeners) {
         removeNotificationListeners();
-      };
-    } catch (error) {
-      logger.error('Failed to initialize app', error);
-      setLoading(false);
-    }
-  };
+      }
+    };
+  }, []);
 
   if (loading) {
     return (

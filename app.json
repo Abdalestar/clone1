@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Loyalty Stamp App",
-    "slug": "loyalty-stamp-app",
+    "slug": "--non-interactive",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -46,7 +46,6 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/notification-icon.png",
           "color": "#007BFF"
         }
       ]
@@ -60,8 +59,9 @@
       "ENABLE_PUSH_NOTIFICATIONS": "${ENABLE_PUSH_NOTIFICATIONS}",
       "ENABLE_OFFLINE_MODE": "${ENABLE_OFFLINE_MODE}",
       "eas": {
-        "projectId": "your-project-id"
+        "projectId": "75d135fd-8582-4474-be9c-083ca63af83a"
       }
-    }
+    },
+    "owner": "abdalestar"
   }
 }

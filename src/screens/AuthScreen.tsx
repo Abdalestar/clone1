@@ -14,11 +14,16 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
 import { COLORS, SIZES } from '../utils/constants';
-import { signUp, signIn } from '../services/auth';
+import { useAuthStore } from '../store/useAuthStore';
+import logger from '../utils/logger';
 
 const AuthScreen = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
+  
+  // Get auth store methods
+  const login = useAuthStore(state => state.login);
+  const signup = useAuthStore(state => state.signup);
   
   // Form fields
   const [email, setEmail] = useState('');
@@ -42,27 +47,38 @@ const AuthScreen = () => {
 
     try {
       if (isLogin) {
-        const { user, error } = await signIn(email, password);
+        logger.info('User attempting login', { email });
+        const { error } = await login(email, password);
+        
         if (error) {
+          logger.error('Login failed', { email, error });
           Alert.alert('Login Failed', error);
+        } else {
+          logger.info('Login successful', { email });
+          // Auth store will handle navigation via state change
         }
       } else {
-        const { user, error } = await signUp({
+        logger.info('User attempting signup', { email, username });
+        const { error } = await signup({
           email,
           password,
           username,
           full_name: fullName,
           phone_number: phoneNumber,
         });
+        
         if (error) {
+          logger.error('Signup failed', { email, username, error });
           Alert.alert('Sign Up Failed', error);
         } else {
-          Alert.alert('Success', 'Account created! Please log in.');
-          setIsLogin(true);
+          logger.info('Signup and auto-login successful', { email });
+          // Auth store will handle auto-login and navigation
         }
       }
-    } catch (error: any) {
-      Alert.alert('Error', error.message);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      logger.error('Auth error', { error: errorMessage });
+      Alert.alert('Error', errorMessage);
     } finally {
       setLoading(false);
     }
