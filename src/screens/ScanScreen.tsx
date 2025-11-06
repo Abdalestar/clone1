@@ -20,6 +20,7 @@ import { Business, StampCard } from '../types';
 import NFCService from '../services/nfc';
 import { decodePayload } from '../utils/payload';
 import SuccessDialog from '../components/SuccessDialog';
+import { isOneTimeStamp, validateOneTimeStamp, claimOneTimeStamp, checkUserRateLimit } from '../services/oneTimeStamps';
 
 type ScanMode = 'qr' | 'nfc';
 
@@ -164,9 +165,16 @@ const ScanScreen = ({ navigation }: any) => {
 
   const handleScanData = async (data: string, method: 'nfc' | 'qr') => {
     try {
+      // Check if this is a one-time stamp (new format)
+      if (isOneTimeStamp(data)) {
+        await handleOneTimeStampScan(data);
+        return;
+      }
+
+      // Otherwise, handle as regular business QR/NFC (existing flow)
       // Decode and verify payload
       const { valid, payload, error } = await decodePayload(data);
-      
+
       if (!valid) {
         Alert.alert('Invalid Code', error || 'The scanned code is invalid or expired');
         return;
@@ -179,7 +187,7 @@ const ScanScreen = ({ navigation }: any) => {
 
       // Get business by ID from payload
       let business: Business | null = null;
-      
+
       if (payload.businessId.startsWith('QR_') || payload.businessId.startsWith('SHOP_')) {
         // Legacy format - find by QR code or NFC tag
         if (method === 'qr') {
@@ -209,6 +217,71 @@ const ScanScreen = ({ navigation }: any) => {
     } finally {
       setIsProcessing(false);
       setTimeout(() => setScanned(false), 3000);
+    }
+  };
+
+  const handleOneTimeStampScan = async (stampCode: string) => {
+    try {
+      const user = await getCurrentUser();
+      if (!user) {
+        Alert.alert('Error', 'Please log in to collect stamps');
+        return;
+      }
+
+      // Check rate limit to prevent abuse
+      const withinLimit = await checkUserRateLimit(user.id);
+      if (!withinLimit) {
+        Alert.alert(
+          'Rate Limit Exceeded',
+          'You have scanned too many stamps recently. Please wait an hour and try again.'
+        );
+        return;
+      }
+
+      // Validate the stamp first
+      const validation = await validateOneTimeStamp(stampCode);
+
+      if (!validation.valid) {
+        // Show appropriate error message
+        Alert.alert('Invalid Stamp', validation.message);
+        return;
+      }
+
+      // Claim the stamp (atomic operation)
+      const result = await claimOneTimeStamp(stampCode, user.id);
+
+      if (!result.success) {
+        Alert.alert('Cannot Claim Stamp', result.message);
+        return;
+      }
+
+      // Success! Animate and show success dialog
+      animateStampSuccess();
+
+      setSuccessData({
+        title: result.is_completed ? '🎉 Card Complete!' : '✅ Stamp Added!',
+        message: result.is_completed
+          ? `Congratulations! You've earned your reward at ${result.business_name}!`
+          : `Stamp added to ${result.business_name}!`,
+        businessName: result.business_name,
+        stampsCollected: result.stamps_collected || 0,
+        stampsRequired: result.stamps_required || 10,
+        isComplete: result.is_completed,
+      });
+      setShowSuccess(true);
+
+      // Confetti for completion
+      if (result.is_completed) {
+        setTimeout(() => {
+          confettiRef.current?.start();
+        }, 300);
+      }
+
+      // Reload cards to show updated data
+      await loadStampCards();
+    } catch (error: any) {
+      console.error('Error claiming one-time stamp:', error);
+      Alert.alert('Error', error.message || 'Failed to claim stamp');
     }
   };
 
