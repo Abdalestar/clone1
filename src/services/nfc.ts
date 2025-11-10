@@ -1,5 +1,6 @@
 import NfcManager, { NfcTech, Ndef } from 'react-native-nfc-manager';
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
 export interface NFCTag {
   id: string;
@@ -8,12 +9,24 @@ export interface NFCTag {
 
 class NFCService {
   private isInitialized = false;
+  
+  /**
+   * Check if running in Expo Go (which doesn't support NFC native modules)
+   */
+  private isExpoGo(): boolean {
+    return Constants.appOwnership === 'expo';
+  }
 
   /**
    * Initialize NFC Manager
    */
   async init(): Promise<boolean> {
     try {
+      // Skip initialization in Expo Go
+      if (this.isExpoGo()) {
+        return false;
+      }
+      
       const supported = await NfcManager.isSupported();
       if (supported) {
         await NfcManager.start();
@@ -31,8 +44,15 @@ class NFCService {
    */
   async isSupported(): Promise<boolean> {
     try {
+      // NFC is not available in Expo Go - requires a dev build or production app
+      if (this.isExpoGo()) {
+        console.log('NFC not available: Running in Expo Go. Build a custom dev client to use NFC.');
+        return false;
+      }
+      
       return await NfcManager.isSupported();
     } catch (error) {
+      console.log('NFC check error:', error);
       return false;
     }
   }

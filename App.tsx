@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
+import { useFonts } from 'expo-font';
+import { MaterialIcons } from '@expo/vector-icons';
 import { supabase } from './src/services/supabase';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import AppNavigator from './src/navigation/AppNavigator';
@@ -11,6 +13,11 @@ import { COLORS } from './src/utils/constants';
 export default function App() {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Load fonts
+  const [fontsLoaded] = useFonts({
+    ...MaterialIcons.font,
+  });
 
   useEffect(() => {
     // Check active sessions and sets the user
@@ -27,7 +34,8 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  if (loading) {
+  // Show loading screen while fonts or user session are loading
+  if (!fontsLoaded || loading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={COLORS.primary} />

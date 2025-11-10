@@ -1,4 +1,10 @@
 import * as Crypto from 'expo-crypto';
+import { Buffer } from 'buffer';
+
+// Ensure Buffer is available globally for compatibility
+if (typeof global.Buffer === 'undefined') {
+  global.Buffer = Buffer;
+}
 
 // Secret key for HMAC signing - in production, fetch from Supabase config
 const SECRET_KEY = process.env.PAYLOAD_SECRET || 'loyalty-stamp-secret-2024';
@@ -76,6 +82,13 @@ export const decodePayload = async (
 
     // Decode base64
     const base64Data = encodedData.replace('STAMP:', '');
+    
+    // Ensure Buffer is available
+    if (typeof Buffer === 'undefined') {
+      console.error('Buffer is not defined - polyfill may have failed');
+      throw new Error('Buffer polyfill not available');
+    }
+    
     const jsonString = Buffer.from(base64Data, 'base64').toString('utf-8');
     const payload: StampPayload = JSON.parse(jsonString);
 
@@ -102,7 +115,11 @@ export const decodePayload = async (
 
     return { valid: true, payload };
   } catch (error: any) {
-    return { valid: false, error: error.message || 'Invalid payload format' };
+    console.error('Payload decode error:', error);
+    return { 
+      valid: false, 
+      error: error.message || 'Invalid payload format. Please ensure you are scanning a valid QR code.' 
+    };
   }
 };
 

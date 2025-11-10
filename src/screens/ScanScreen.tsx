@@ -165,6 +165,8 @@ const ScanScreen = ({ navigation }: any) => {
 
   const handleScanData = async (data: string, method: 'nfc' | 'qr') => {
     try {
+      console.log('Scanning data:', data.substring(0, 50) + '...'); // Log first 50 chars for debugging
+      
       // Check if this is a one-time stamp (new format)
       if (isOneTimeStamp(data)) {
         await handleOneTimeStampScan(data);
@@ -176,12 +178,21 @@ const ScanScreen = ({ navigation }: any) => {
       const { valid, payload, error } = await decodePayload(data);
 
       if (!valid) {
-        Alert.alert('Invalid Code', error || 'The scanned code is invalid or expired');
+        console.error('Payload validation failed:', error);
+        Alert.alert(
+          'Invalid Code', 
+          error || 'The scanned code is invalid or expired',
+          [{ text: 'OK', onPress: () => setScanned(false) }]
+        );
         return;
       }
 
       if (!payload) {
-        Alert.alert('Error', 'Failed to read stamp data');
+        Alert.alert(
+          'Error', 
+          'Failed to read stamp data. Please try scanning again.',
+          [{ text: 'OK', onPress: () => setScanned(false) }]
+        );
         return;
       }
 
@@ -209,11 +220,19 @@ const ScanScreen = ({ navigation }: any) => {
       if (business) {
         await handleStampCollection(business, method);
       } else {
-        Alert.alert('Error', 'Business not found. Please try again.');
+        Alert.alert(
+          'Business Not Found', 
+          'This business is not registered in the system. Please contact the business.',
+          [{ text: 'OK', onPress: () => setScanned(false) }]
+        );
       }
     } catch (error: any) {
       console.error('Scan error:', error);
-      Alert.alert('Error', error.message || 'Failed to process stamp');
+      Alert.alert(
+        'Scan Error', 
+        error.message || 'Failed to process stamp. Please try again.',
+        [{ text: 'OK', onPress: () => setScanned(false) }]
+      );
     } finally {
       setIsProcessing(false);
       setTimeout(() => setScanned(false), 3000);
@@ -407,7 +426,11 @@ const ScanScreen = ({ navigation }: any) => {
           style={[styles.toggleButton, scanMode === 'nfc' && styles.toggleButtonActive]}
           onPress={() => {
             if (!nfcSupported) {
-              Alert.alert('Not Supported', 'NFC is not available on this device. Please use QR scan instead.');
+              Alert.alert(
+                'NFC Not Available', 
+                'NFC requires a custom development build or production app. If you are using Expo Go, please build a custom dev client to enable NFC. For now, please use QR scan instead.',
+                [{ text: 'OK' }]
+              );
             } else if (!nfcEnabled) {
               Alert.alert('NFC Disabled', 'Please enable NFC in your device settings.');
             } else {
@@ -460,7 +483,9 @@ const ScanScreen = ({ navigation }: any) => {
           <Text style={styles.nfcSubtitle}>
             {nfcSupported && nfcEnabled
               ? 'Tap the button below to scan'
-              : 'NFC not available. Use QR scan instead.'}
+              : !nfcSupported 
+                ? 'NFC requires a custom build (not available in Expo Go). Use QR scan instead.'
+                : 'NFC is disabled. Enable it in your device settings or use QR scan.'}
           </Text>
           
           {nfcSupported && nfcEnabled && (
