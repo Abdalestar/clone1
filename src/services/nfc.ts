@@ -5,6 +5,7 @@ import Constants from 'expo-constants';
 export interface NFCTag {
   id: string;
   data: string;
+  uid: string;
 }
 
 class NFCService {
@@ -88,6 +89,7 @@ class NFCService {
       
       if (tag) {
         let data = '';
+        const uid = tag.id || 'unknown';
         
         // Extract data from NDEF message
         if (tag.ndefMessage && tag.ndefMessage.length > 0) {
@@ -107,6 +109,7 @@ class NFCService {
         onTagDiscovered({
           id: tag.id || 'unknown',
           data: data || '',
+          uid: uid,
         });
       }
     } catch (error) {

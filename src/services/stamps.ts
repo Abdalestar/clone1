@@ -2,6 +2,8 @@ import { supabase } from './supabase';
 import { StampCard, Stamp, Business } from '../types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://wlnphingifczfdqxaijb.supabase.co';
+
 export const getUserStampCards = async (userId: string): Promise<StampCard[]> => {
   try {
     const { data, error } = await supabase
@@ -188,5 +190,54 @@ export const getBusinessByQR = async (qrCode: string): Promise<Business | null> 
     return data as Business;
   } catch (error) {
     return null;
+  }
+};
+
+export const collectNFCStampSecure = async (
+  tagUid: string,
+  encryptedPayload: string,
+  userId: string
+): Promise<{
+  success: boolean;
+  stamp_card_id?: string;
+  stamps_collected?: number;
+  is_completed?: boolean;
+  error?: string;
+}> => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      return { success: false, error: 'Not authenticated' };
+    }
+
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/verify-nfc-stamp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        tag_uid: tagUid,
+        encrypted_payload: encryptedPayload,
+        user_id: userId,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      return { success: false, error: result.error || 'Failed to collect stamp' };
+    }
+
+    return {
+      success: result.success,
+      stamp_card_id: result.stamp_card_id,
+      stamps_collected: result.stamps_collected,
+      is_completed: result.is_completed,
+    };
+  } catch (error: any) {
+    console.error('Error collecting NFC stamp:', error);
+    return { success: false, error: error.message || 'Network error' };
   }
 };

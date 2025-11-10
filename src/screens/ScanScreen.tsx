@@ -14,7 +14,7 @@ import * as Haptics from 'expo-haptics';
 import { MaterialIcons } from '@expo/vector-icons';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { COLORS, SIZES } from '../utils/constants';
-import { getBusinessByQR, getBusinessByNFC, getUserStampCards, createStampCard, addStamp } from '../services/stamps';
+import { getBusinessByQR, getBusinessByNFC, getUserStampCards, createStampCard, addStamp, collectNFCStampSecure } from '../services/stamps';
 import { getCurrentUser } from '../services/auth';
 import { Business, StampCard } from '../types';
 import NFCService from '../services/nfc';
@@ -141,8 +141,7 @@ const ScanScreen = ({ navigation }: any) => {
         setScanned(true);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         
-        // Process NFC tag data
-        await handleScanData(tag.data, 'nfc');
+        await handleNFCSecureScan(tag.uid, tag.data);
       });
     } catch (error: any) {
       console.error('NFC error:', error);
@@ -301,6 +300,51 @@ const ScanScreen = ({ navigation }: any) => {
     } catch (error: any) {
       console.error('Error claiming one-time stamp:', error);
       Alert.alert('Error', error.message || 'Failed to claim stamp');
+    }
+  };
+
+  const handleNFCSecureScan = async (tagUid: string, encryptedPayload: string) => {
+    try {
+      setIsProcessing(true);
+      
+      const user = await getCurrentUser();
+      if (!user) {
+        Alert.alert('Error', 'Please log in to collect stamps');
+        return;
+      }
+
+      const result = await collectNFCStampSecure(tagUid, encryptedPayload, user.id);
+
+      if (!result.success) {
+        Alert.alert('Stamp Collection Failed', result.error || 'Unable to collect stamp');
+        return;
+      }
+
+      animateStampSuccess();
+
+      setSuccessData({
+        title: result.is_completed ? '🎉 Card Complete!' : '✅ Stamp Added!',
+        message: result.is_completed
+          ? 'Congratulations! You\'ve earned your reward!'
+          : 'Great! Keep collecting stamps.',
+        stampsCollected: result.stamps_collected || 0,
+        isComplete: result.is_completed,
+      });
+      setShowSuccess(true);
+
+      if (result.is_completed) {
+        setTimeout(() => {
+          confettiRef.current?.start();
+        }, 300);
+      }
+
+      await loadStampCards();
+    } catch (error: any) {
+      console.error('NFC secure scan error:', error);
+      Alert.alert('Error', error.message || 'Failed to process NFC stamp');
+    } finally {
+      setIsProcessing(false);
+      setTimeout(() => setScanned(false), 2000);
     }
   };
 
