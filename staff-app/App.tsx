@@ -5,7 +5,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
 
-import LoginScreen from './src/screens/HomeScreen';
+import LoginScreen from './src/screens/LoginScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import { StaffSession } from './src/types';
 import { getStoredSession, logout } from './src/services/auth';
@@ -14,7 +14,15 @@ import nfcService from './src/services/nfc';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-function MainTabs() {
+function MainTabs({ session }: { session: StaffSession }) {
+  const handleIssueStamp = () => {
+    console.log('Issue Stamp clicked');
+  };
+
+  const handleGenerateStamps = () => {
+    console.log('Generate Stamps clicked');
+  };
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -25,32 +33,64 @@ function MainTabs() {
     >
       <Tab.Screen
         name="Home"
-        component={HomeScreen}
         options={{
           tabBarIcon: () => '🏠',
         }}
-      />
+      >
+        {(props) => (
+          <HomeScreen
+            {...props}
+            session={session}
+            onIssueStamp={handleIssueStamp}
+            onGenerateStamps={handleGenerateStamps}
+          />
+        )}
+      </Tab.Screen>
       <Tab.Screen
         name="Inventory"
-        component={HomeScreen}
         options={{
           tabBarIcon: () => '📦',
         }}
-      />
+      >
+        {(props) => (
+          <HomeScreen
+            {...props}
+            session={session}
+            onIssueStamp={handleIssueStamp}
+            onGenerateStamps={handleGenerateStamps}
+          />
+        )}
+      </Tab.Screen>
       <Tab.Screen
         name="History"
-        component={HomeScreen}
         options={{
           tabBarIcon: () => '📊',
         }}
-      />
+      >
+        {(props) => (
+          <HomeScreen
+            {...props}
+            session={session}
+            onIssueStamp={handleIssueStamp}
+            onGenerateStamps={handleGenerateStamps}
+          />
+        )}
+      </Tab.Screen>
       <Tab.Screen
         name="Settings"
-        component={HomeScreen}
         options={{
           tabBarIcon: () => '⚙️',
         }}
-      />
+      >
+        {(props) => (
+          <HomeScreen
+            {...props}
+            session={session}
+            onIssueStamp={handleIssueStamp}
+            onGenerateStamps={handleGenerateStamps}
+          />
+        )}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }
@@ -101,7 +141,9 @@ export default function App() {
       <StatusBar style="auto" />
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {session ? (
-          <Stack.Screen name="Main" component={MainTabs} />
+          <Stack.Screen name="Main">
+            {(props) => <MainTabs {...props} session={session} />}
+          </Stack.Screen>
         ) : (
           <Stack.Screen name="Login">
             {(props) => <LoginScreen {...props} onLoginSuccess={handleLoginSuccess} />}
