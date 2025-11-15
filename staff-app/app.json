@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "StampMe Staff",
+    "slug": "stampme-staff-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1976D2"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.stampme.staffapp",
+      "infoPlist": {
+        "NFCReaderUsageDescription": "This app uses NFC to write loyalty stamps to tags for customers."
+      }
+    },
+    "android": {
+      "package": "com.stampme.staffapp",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1976D2"
+      },
+      "permissions": [
+        "android.permission.NFC"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
